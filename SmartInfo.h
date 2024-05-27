@@ -693,7 +693,7 @@ union VARIANT_UNION
     FLOAT fltVal;
     DOUBLE dblVal;
     VARIANT_BOOL boolVal;
-    _VARIANT_BOOL bool;
+    // _VARIANT_BOOL booleen;
     SCODE scode;
     CY cyVal;
     DATE date;
@@ -708,7 +708,7 @@ union VARIANT_UNION
     FLOAT *pfltVal;
     DOUBLE *pdblVal;
     VARIANT_BOOL *pboolVal;
-    _VARIANT_BOOL *pbool;
+    // _VARIANT_BOOL *pbool;
     SCODE *pscode;
     CY *pcyVal;
     DATE *pdate;

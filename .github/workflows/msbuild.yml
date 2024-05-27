@@ -1,0 +1,88 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: MSBuild
+
+# We will build only when AutomaticVersionHeader.h changes
+# Our setbldrc
+on:
+  push:
+    paths:
+      - '**AutomaticVersionHeader.h'
+    # branches: [ "main" ]
+  pull_request:
+    paths:
+      - '**AutomaticVersionHeader.h'
+    # branches: [ "main" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: Smartinfo.v143.sln
+  
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+  BUILD_VERSION: 1.0.4.10 # Version
+#
+permissions: 
+  actions: write
+  contents: write
+  # packages: write
+  repository-projects: write
+  
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Build Win32
+      working-directory: ${{env.GITHUB_WORKSPACE}} 
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}}  /p:Platform=win32 ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Build x64
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}}  /p:Platform=x64 ${{env.SOLUTION_FILE_PATH}}
+
+    # Create Release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: V${{env.BUILD_VERSION}} # ${{ github.ref }}
+        release_name: Release.V${{env.BUILD_VERSION}}  # ${{ github.ref }}
+        draft: false
+        prerelease: false
+    
+    # Upload Win32 Release
+    - name: Upload Win32 Executable
+      id: upload-release-asset-win32 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which
+        # include a `upload_url`. See this blog post for more info:
+        # https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/Release/Smartinfo.v143.exe
+        asset_name:Smartinfo.exe
+        asset_content_type: application/zip
+ 

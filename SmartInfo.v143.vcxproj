@@ -92,16 +92,16 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\R\ReplaceString\PrintRoutine.h" />
-    <ClInclude Include="..\..\R\ReplaceString\strstr.h" />
+    <ClInclude Include="PrintRoutine.h" />
+    <ClInclude Include="strstr.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SmartInfo.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\R\ReplaceString\PrintRoutine.cpp" />
-    <ClCompile Include="..\..\R\ReplaceString\strstr.cpp" />
+    <ClCompile Include="PrintRoutine.cpp" />
+    <ClCompile Include="strstr.cpp" />
     <ClCompile Include="SmartInfo.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

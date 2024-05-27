@@ -30,10 +30,10 @@
     <ClInclude Include="SmartInfo.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\R\ReplaceString\PrintRoutine.h">
+    <ClInclude Include="PrintRoutine.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\R\ReplaceString\strstr.h">
+    <ClInclude Include="strstr.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,10 +44,10 @@
     <ClCompile Include="SmartInfo.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\R\ReplaceString\PrintRoutine.cpp">
+    <ClCompile Include="PrintRoutine.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\R\ReplaceString\strstr.cpp">
+    <ClCompile Include="strstr.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

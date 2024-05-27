@@ -85,4 +85,3 @@ jobs:
         asset_path: ${{ github.workspace }}/Release/Smartinfo.v143.exe
         asset_name:Smartinfo.exe
         asset_content_type: application/zip
-        

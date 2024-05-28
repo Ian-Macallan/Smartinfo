@@ -1,119 +1,119 @@
 #ifndef _SMARTINFO_H
-#define	_SMARTINFO_H
+#define _SMARTINFO_H
 
 #include "resource.h"
 
 #include <devioctl.h>
 #include <ntdddisk.h>
 
-#define	LEN_SHORT_STRING	16
-#define	LEN_STRING			256
-#define	LEN_MID_STRING		1024
-#define	LEN_MAX_STRING		4096
+#define LEN_SHORT_STRING    16
+#define LEN_STRING          256
+#define LEN_MID_STRING      1024
+#define LEN_MAX_STRING      4096
 
-#define	LEN_BLOCK			256
+#define LEN_BLOCK           256
 
 //
-#define INDEX_ATTRIB_INDEX									0
-#define INDEX_ATTRIB_UNKNOWN1								1
-#define INDEX_ATTRIB_UNKNOWN2								2
-#define INDEX_ATTRIB_VALUE									3
-#define INDEX_ATTRIB_WORST									4
-#define INDEX_ATTRIB_RAW									5
+#define INDEX_ATTRIB_INDEX                                  0
+#define INDEX_ATTRIB_UNKNOWN1                               1
+#define INDEX_ATTRIB_UNKNOWN2                               2
+#define INDEX_ATTRIB_VALUE                                  3
+#define INDEX_ATTRIB_WORST                                  4
+#define INDEX_ATTRIB_RAW                                    5
 
 //
 enum COMMAND_TYPE
 {
-	CMD_TYPE_UNKNOWN = 0,
-	CMD_TYPE_PHYSICAL_DRIVE,
-	CMD_TYPE_SCSI_MINIPORT,
-	CMD_TYPE_SILICON_IMAGE,
-	CMD_TYPE_SAT,			// SAT = SCSI_ATA_TRANSLATION
-	CMD_TYPE_SUNPLUS,
-	CMD_TYPE_IO_DATA,
-	CMD_TYPE_LOGITEC,
-	CMD_TYPE_PROLIFIC,
-	CMD_TYPE_JMICRON,
-	CMD_TYPE_CYPRESS,
-	CMD_TYPE_SAT_ASM1352R,	// AMS1352 2nd drive
-	CMD_TYPE_CSMI,				// CSMI = Common Storage Management Interface
-	CMD_TYPE_CSMI_PHYSICAL_DRIVE, // CSMI = Common Storage Management Interface 
-	CMD_TYPE_WMI,
-	CMD_TYPE_NVME_SAMSUNG,
-	CMD_TYPE_NVME_INTEL,
-	CMD_TYPE_NVME_STORAGE_QUERY,
-	CMD_TYPE_NVME_JMICRON,
-	CMD_TYPE_NVME_ASMEDIA,
-	CMD_TYPE_NVME_REALTEK,
-	CMD_TYPE_NVME_INTEL_RST,
-	CMD_TYPE_MEGARAID,
-	CMD_TYPE_DEBUG
+    CMD_TYPE_UNKNOWN = 0,
+    CMD_TYPE_PHYSICAL_DRIVE,
+    CMD_TYPE_SCSI_MINIPORT,
+    CMD_TYPE_SILICON_IMAGE,
+    CMD_TYPE_SAT,           // SAT = SCSI_ATA_TRANSLATION
+    CMD_TYPE_SUNPLUS,
+    CMD_TYPE_IO_DATA,
+    CMD_TYPE_LOGITEC,
+    CMD_TYPE_PROLIFIC,
+    CMD_TYPE_JMICRON,
+    CMD_TYPE_CYPRESS,
+    CMD_TYPE_SAT_ASM1352R,  // AMS1352 2nd drive
+    CMD_TYPE_CSMI,              // CSMI = Common Storage Management Interface
+    CMD_TYPE_CSMI_PHYSICAL_DRIVE, // CSMI = Common Storage Management Interface
+    CMD_TYPE_WMI,
+    CMD_TYPE_NVME_SAMSUNG,
+    CMD_TYPE_NVME_INTEL,
+    CMD_TYPE_NVME_STORAGE_QUERY,
+    CMD_TYPE_NVME_JMICRON,
+    CMD_TYPE_NVME_ASMEDIA,
+    CMD_TYPE_NVME_REALTEK,
+    CMD_TYPE_NVME_INTEL_RST,
+    CMD_TYPE_MEGARAID,
+    CMD_TYPE_DEBUG
 };
 
 //
-typedef	struct
+typedef struct
 {
-	int			id;
-	int			critical;
-	const WCHAR	*name;
-	const WCHAR	*details;
-}	ST_ATTRIBUTES;
+    int         id;
+    int         critical;
+    const WCHAR *name;
+    const WCHAR *details;
+}   ST_ATTRIBUTES;
 
 //
 #include <pshpack1.h>
 
 //
-//	Must Be 12 Bytes
-typedef	struct
+//  Must Be 12 Bytes
+typedef struct
 {
-	BYTE	bIndex;
-	/*
-		Bit 0 - Warranty
-		Bit 1 - Offline
-		Bit 2 - Performance
-		Bit 3 - Error rate
+    BYTE    bIndex;
+    /*
+        Bit 0 - Warranty
+        Bit 1 - Offline
+        Bit 2 - Performance
+        Bit 3 - Error rate
 
-		Bit 4 - Event count 
-		Bit 5 - Self-preservation
-		Bits 6–15 - Reserved 
-	 */
-	WORD	wFlag;
+        Bit 4 - Event count
+        Bit 5 - Self-preservation
+        Bits 6–15 - Reserved
+     */
+    WORD    wFlag;
 
-	//	Current value of the attribute, normalized from 1 to 100 (0x01-0x64), if that has meaning for the attribute
-	BYTE	bCurrent;
+    //  Current value of the attribute, normalized from 1 to 100 (0x01-0x64), if that has meaning for the attribute
+    BYTE    bCurrent;
 
-	//	Lowest normalized value of the attribute, from 1 to 100 (0x01-0x64), if that has meaning for the attribute
-	BYTE	bWorst;
+    //  Lowest normalized value of the attribute, from 1 to 100 (0x01-0x64), if that has meaning for the attribute
+    BYTE    bWorst;
 
-	//		32 bits of raw attribute data
-	union {
-		DWORD	dwData;
-		struct 
-		{
-			WORD	wData0;
-			WORD	wData1;
-		};
-	};
+    //      32 bits of raw attribute data
+    union {
+        DWORD   dwData;
+        struct
+        {
+            WORD    wData0;
+            WORD    wData1;
+        };
+    };
 
-	//
-	//		Attribute specific 
-	WORD	wSpecific;
+    //
+    //      Attribute specific
+    WORD    wSpecific;
 
-	//		Threshold
-	BYTE	bThreshold;
+    //      Threshold
+    BYTE    bThreshold;
 
-}	ST_VARIABLES;
+}   ST_VARIABLES;
 
 //
-//	362 Bytes Structure
-typedef	struct
+//  362 Bytes Structure
+typedef struct
 {
-	union{
-		WORD			wLength;
-		WORD			wRevision;
-	};
-	ST_VARIABLES	stVariables [ 30 ];
-}	ST_VALUES;
+    union{
+        WORD            wLength;
+        WORD            wRevision;
+    };
+    ST_VARIABLES    stVariables [ 30 ];
+}   ST_VALUES;
 
 #include <poppack.h>
 
@@ -497,193 +497,193 @@ typedef struct _IDENTIFY_DEVICE_DATA {
 
 typedef struct
 {
-	BYTE  bDriverError;
-	BYTE  bIDEStatus;
-	BYTE  bReserved[2];
-	DWORD dwReserved[2];
-}	ST_DRIVERSTAT;
+    BYTE  bDriverError;
+    BYTE  bIDEStatus;
+    BYTE  bReserved[2];
+    DWORD dwReserved[2];
+}   ST_DRIVERSTAT;
 
 typedef struct
 {
-	DWORD			cBufferSize;
-	ST_DRIVERSTAT	DriverStatus;
-	BYTE			bBuffer[1];
-}	ST_ATAOUTPARAM;
+    DWORD           cBufferSize;
+    ST_DRIVERSTAT   DriverStatus;
+    BYTE            bBuffer[1];
+}   ST_ATAOUTPARAM;
 
 typedef struct
 {
-	BYTE			m_ucAttribIndex;
-	WORD			m_wFlag;
-	WORD			m_wData0;
-	WORD			m_wData1;
-	DWORD			m_dwData;
-	WORD			m_wSpecific;
-	BYTE			m_ucValue;
-	BYTE			m_ucWorst;
-	DWORD			m_bThreshold;
-}	ST_SMART_INFO;
+    BYTE            m_ucAttribIndex;
+    WORD            m_wFlag;
+    WORD            m_wData0;
+    WORD            m_wData1;
+    DWORD           m_dwData;
+    WORD            m_wSpecific;
+    BYTE            m_ucValue;
+    BYTE            m_ucWorst;
+    DWORD           m_bThreshold;
+}   ST_SMART_INFO;
 
 //
 typedef struct
 {
-	GETVERSIONINPARAMS	m_stGetVersionInParams;
-	WCHAR				m_csErrorString [ LEN_STRING ];
-}	ST_DRIVE_INFO;
+    GETVERSIONINPARAMS  m_stGetVersionInParams;
+    WCHAR               m_csErrorString [ LEN_STRING ];
+}   ST_DRIVE_INFO;
 
 //
-//	IOCTL_SCSI_MINIPORT
+//  IOCTL_SCSI_MINIPORT
 //
 #include <pshpack1.h>
 
 typedef struct
 {
-	union
-	{
-		SENDCMDINPARAMS		inp;
-		SENDCMDOUTPARAMS	out;
-	};
-}	ST_SENDCMDPARAMS;
+    union
+    {
+        SENDCMDINPARAMS     inp;
+        SENDCMDOUTPARAMS    out;
+    };
+}   ST_SENDCMDPARAMS;
 
-typedef struct 
+typedef struct
 {
-	SRB_IO_CONTROL		srbc;
+    SRB_IO_CONTROL      srbc;
 
-	ST_SENDCMDPARAMS	io;
+    ST_SENDCMDPARAMS    io;
 
-	//
-	BYTE data[512];
+    //
+    BYTE data[512];
 
-	//
-}	ST_SCSI_MINIPORT_INP;
+    //
+}   ST_SCSI_MINIPORT_INP;
 
-typedef struct 
+typedef struct
 {
-	SRB_IO_CONTROL		srbc;
+    SRB_IO_CONTROL      srbc;
 
-	ST_SENDCMDPARAMS	io;
+    ST_SENDCMDPARAMS    io;
 
-	//
-	BYTE data[512];
+    //
+    BYTE data[512];
 
-	//
-}	ST_SCSI_MINIPORT_OUT;
+    //
+}   ST_SCSI_MINIPORT_OUT;
 
 /**
-	IDEREGS	8 bytes
-	UCHAR	bFeaturesReg;			// 0 : Used for specifying SMART "commands".
-	UCHAR	bSectorCountReg;        // 1 : IDE sector count register
-	UCHAR	bSectorNumberReg;       // 2 : IDE sector number register
-	UCHAR	bCylLowReg;             // 3 : IDE low order cylinder value
-	UCHAR	bCylHighReg;            // 4 : IDE high order cylinder value
-	UCHAR	bDriveHeadReg;          // 5 : IDE drive/head register
-	UCHAR	bCommandReg;            // 6 : Actual IDE command.
-	UCHAR	bReserved;				// 7 : reserved for future use.  Must be zero.
+    IDEREGS 8 bytes
+    UCHAR   bFeaturesReg;           // 0 : Used for specifying SMART "commands".
+    UCHAR   bSectorCountReg;        // 1 : IDE sector count register
+    UCHAR   bSectorNumberReg;       // 2 : IDE sector number register
+    UCHAR   bCylLowReg;             // 3 : IDE low order cylinder value
+    UCHAR   bCylHighReg;            // 4 : IDE high order cylinder value
+    UCHAR   bDriveHeadReg;          // 5 : IDE drive/head register
+    UCHAR   bCommandReg;            // 6 : Actual IDE command.
+    UCHAR   bReserved;              // 7 : reserved for future use.  Must be zero.
 
  **/
 //
 typedef struct {
-	struct {
-		BYTE	opCode;
-	} cdb0;
-	struct {
-		BYTE reserved : 1;
-		BYTE protocol : 4;
-		BYTE multipleCount : 3;
-	} cdb1;
-	struct {
-		BYTE length : 2;
-		BYTE byteBlock : 1;
-		BYTE tDir : 1;
-		BYTE reserved : 1;
-		BYTE okCond : 1;
-		BYTE offline : 2;
-	} cdb2;
-	IDEREGS	ideRegs;
+    struct {
+        BYTE    opCode;
+    } cdb0;
+    struct {
+        BYTE reserved : 1;
+        BYTE protocol : 4;
+        BYTE multipleCount : 3;
+    } cdb1;
+    struct {
+        BYTE length : 2;
+        BYTE byteBlock : 1;
+        BYTE tDir : 1;
+        BYTE reserved : 1;
+        BYTE okCond : 1;
+        BYTE offline : 2;
+    } cdb2;
+    IDEREGS ideRegs;
 } ST_CDB_10, *P_ST_CDB_10;
 
 //
 typedef struct {
-	BYTE	cdb0;
-	BYTE	cdb1;
-	IDEREGS	ideRegs;
+    BYTE    cdb0;
+    BYTE    cdb1;
+    IDEREGS ideRegs;
 } ST_CDB_12_8, *P_ST_CDB_12_8;
 
 //
 typedef struct {
-	BYTE	cdb0;
-	BYTE	cdb1;
-	BYTE	cdb2;
-	IDEREGS	ideRegs;
+    BYTE    cdb0;
+    BYTE    cdb1;
+    BYTE    cdb2;
+    IDEREGS ideRegs;
 } ST_CDB_12_9, *P_ST_CDB_12_9;
 
 //
 typedef struct {
-	BYTE	cdb0;
-	BYTE	cdb1;
-	BYTE	cdb2;
-	BYTE	cdb3;
-	BYTE	cdb4;
-	IDEREGS	ideRegs;
+    BYTE    cdb0;
+    BYTE    cdb1;
+    BYTE    cdb2;
+    BYTE    cdb3;
+    BYTE    cdb4;
+    IDEREGS ideRegs;
 } ST_CDB_12_11, *P_ST_CDB_12_11;
 
 typedef struct {
-	BYTE	cdb0;
-	BYTE	cdb1;
-	BYTE	cdb2;
-	BYTE	cdb3;
-	BYTE	cdb4;
-	BYTE	cdb5;
-	IDEREGS	ideRegs;
+    BYTE    cdb0;
+    BYTE    cdb1;
+    BYTE    cdb2;
+    BYTE    cdb3;
+    BYTE    cdb4;
+    BYTE    cdb5;
+    IDEREGS ideRegs;
 } ST_CDB_16_12, *P_ST_CDB_16_12;
 
 typedef struct {
-	BYTE	cdb0;
-	BYTE	cdb1;
-	BYTE	cdb2;
-	BYTE	cdb3;
-	BYTE	cdb4;
-	BYTE	cdb5;
-	BYTE	cdb6;
-	BYTE	cdb7;
-	BYTE	cdb8;
-	IDEREGS	ideRegs;
+    BYTE    cdb0;
+    BYTE    cdb1;
+    BYTE    cdb2;
+    BYTE    cdb3;
+    BYTE    cdb4;
+    BYTE    cdb5;
+    BYTE    cdb6;
+    BYTE    cdb7;
+    BYTE    cdb8;
+    IDEREGS ideRegs;
 } ST_CDB_16_15, *P_ST_CDB_16_15;
 
 //
-//	SCSI_PASS_THROUGH
+//  SCSI_PASS_THROUGH
 typedef struct {
-	SCSI_PASS_THROUGH			ScsiPassThrough;
-	ULONG						Filler;				// realign buffers to double word boundary
-	UCHAR						SenseBuffer[32];
-	UCHAR						DataBuffer[4096];
+    SCSI_PASS_THROUGH           ScsiPassThrough;
+    ULONG                       Filler;             // realign buffers to double word boundary
+    UCHAR                       SenseBuffer[32];
+    UCHAR                       DataBuffer[4096];
 } ST_SCSI_PASS_THROUGH_BUF, *P_ST_SCSI_PASS_THROUGH_BUF;
 
 typedef struct  {
-	SCSI_PASS_THROUGH			ScsiPassThrough;
-	ULONG						Filler;				// realign buffers to double word boundary
-	UCHAR						SenseBuffer[24];
-	UCHAR						DataBuffer[4096];
+    SCSI_PASS_THROUGH           ScsiPassThrough;
+    ULONG                       Filler;             // realign buffers to double word boundary
+    UCHAR                       SenseBuffer[24];
+    UCHAR                       DataBuffer[4096];
 } ST_SCSI_PASS_THROUGH_BUF_24, *P_ST_SCSI_PASS_THROUGH_BUF_24;
 
 //
-//	SCSI_PASS_THROUGH_DIRECT
+//  SCSI_PASS_THROUGH_DIRECT
 typedef struct {
-	SCSI_PASS_THROUGH_DIRECT	ScsiPassThrough;
-	ULONG						Filler;				// realign buffers to double word boundary
-	UCHAR						SenseBuffer[32];
-	UCHAR						DataBuffer[4096];
+    SCSI_PASS_THROUGH_DIRECT    ScsiPassThrough;
+    ULONG                       Filler;             // realign buffers to double word boundary
+    UCHAR                       SenseBuffer[32];
+    UCHAR                       DataBuffer[4096];
 } ST_SCSI_PASS_THROUGH_DIR, *P_ST_SCSI_PASS_THROUGH_DIR;
 
 typedef struct  {
-	SCSI_PASS_THROUGH_DIRECT	ScsiPassThrough;
-	ULONG						Filler;				// realign buffers to double word boundary
-	UCHAR						SenseBuffer[24];
-	UCHAR						DataBuffer[4096];
+    SCSI_PASS_THROUGH_DIRECT    ScsiPassThrough;
+    ULONG                       Filler;             // realign buffers to double word boundary
+    UCHAR                       SenseBuffer[24];
+    UCHAR                       DataBuffer[4096];
 } ST_SCSI_PASS_THROUGH_DIR_24, *P_ST_SCSI_PASS_THROUGH_DIR_24;
 
 #include <poppack.h>
 
-//	Variant Values
+//  Variant Values
 union VARIANT_UNION
 {
     LONGLONG llVal;
@@ -733,9 +733,9 @@ union VARIANT_UNION
     UINT *puintVal;
     struct __tagBRECORD
     {
-		PVOID pvRecord;
-		IRecordInfo *pRecInfo;
-    } 	__VARIANT_NAME_4;
+        PVOID pvRecord;
+        IRecordInfo *pRecInfo;
+    }   __VARIANT_NAME_4;
 };
 
 #endif

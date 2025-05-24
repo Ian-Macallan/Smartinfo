@@ -59,6 +59,82 @@ typedef int             SizeInBytes;
 typedef int             SizeInChars;
 
 //
+class AutoPtrW
+{
+    public :
+        WCHAR   *wptr;
+        size_t  wlen;
+
+    public :
+        AutoPtrW ( )
+        {
+            wlen = 0;
+            wptr = NULL;
+        }
+
+        //  Allocate len * sizeof(WCHAR)
+        AutoPtrW ( size_t len )
+        {
+            this->wlen  = len;
+            wptr        = (WCHAR *) malloc ( ( len + 1 ) * sizeof(WCHAR) );
+            memset ( wptr, 0, ( len + 1 ) * sizeof(WCHAR) );
+        }
+
+        ~AutoPtrW()
+        {
+            if ( wptr != NULL )
+            {
+                delete wptr;
+            }
+            wptr    = NULL;
+            wlen    = 0;
+        }
+
+        operator const WCHAR * ()
+        {
+            return wptr;
+        }
+};
+
+//
+class AutoPtrA
+{
+    public :
+        char   *ptr;
+        size_t  len;
+
+    public :
+        AutoPtrA ( )
+        {
+            len = 0;
+            ptr = NULL;
+        }
+
+        //  Allocate len
+        AutoPtrA ( size_t len )
+        {
+            this->len   = len;
+            ptr         = (char *) malloc ( len + 1 );
+            memset ( ptr, 0, len + 1 );
+        }
+
+        ~AutoPtrA()
+        {
+            if ( ptr != NULL )
+            {
+                delete ptr;
+            }
+            ptr    = NULL;
+            len    = 0;
+        }
+
+        operator const char * ()
+        {
+            return ptr;
+        }
+};
+
+//
 //====================================================================================
 //  UNICODE
 //====================================================================================

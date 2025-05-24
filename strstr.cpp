@@ -26,6 +26,8 @@
 #include <Shlwapi.h>
 #include <Shellapi.h>
 
+#include "AutomaticCompilerVersion.h"
+
 #pragma comment (lib, "Shlwapi.lib")
 #pragma comment (lib, "advapi32.lib")
 #pragma comment (lib, "Shell32.lib")
@@ -135,7 +137,7 @@ char *__strstriA ( char *pString, const char *pSearched )
     }
 
     //
-    while ( *pString != L'\0' )
+    while ( *pString != '\0' )
     {
         if ( _strnicmp ( pString, pSearched, iLen ) == 0 )
         {
@@ -207,7 +209,7 @@ char *__strstrA ( char *pString, const char *pSearched )
     }
 
     //
-    while ( *pString != L'\0' )
+    while ( *pString != '\0' )
     {
         if ( strncmp ( pString, pSearched, iLen ) == 0 )
         {
@@ -244,6 +246,11 @@ bool __strrepiW (   WCHAR *lineRead, size_t sizeType,
         return replaced;
     }
 
+    if ( _wcsicmp ( pSearched, pReplaced ) == 0 )
+    {
+        return replaced;
+    }
+
     //
     while ( sizeType > 0 && *lineRead != L'\0' )
     {
@@ -276,8 +283,11 @@ bool __strrepiW (   WCHAR *lineRead, size_t sizeType,
                 wmemcpy_s ( lineRead, sizeType, pReplaced, lenReplaced );
 
                 //
-                lineRead    += lenReplaced;
-                sizeType    -= lenReplaced;
+                if ( ! bGlobal || ( lenReplaced >= lenSearched ) )
+                {
+                    lineRead    += lenReplaced;
+                    sizeType    -= lenReplaced;
+                }
 
                 //
                 //      Say it has been replaced
@@ -328,8 +338,13 @@ bool __strrepiA (   char *lineRead, size_t sizeType,
         return replaced;
     }
 
+    if ( _stricmp ( pSearched, pReplaced ) == 0 )
+    {
+        return replaced;
+    }
+
     //
-    while ( sizeType > 0 && *lineRead != L'\0' )
+    while ( sizeType > 0 && *lineRead != '\0' )
     {
         int compare = _strnicmp ( lineRead, pSearched, strlen ( pSearched ) );
         if ( compare == 0 )
@@ -360,8 +375,11 @@ bool __strrepiA (   char *lineRead, size_t sizeType,
                 memcpy_s ( lineRead, sizeType, pReplaced, lenReplaced );
 
                 //
-                lineRead    += lenReplaced;
-                sizeType    -= lenReplaced;
+                if ( ! bGlobal || ( lenReplaced >= lenSearched ) )
+                {
+                    lineRead    += lenReplaced;
+                    sizeType    -= lenReplaced;
+                }
 
                 //
                 //      Say it has been replaced
@@ -440,6 +458,11 @@ bool __strrepW (    WCHAR *lineRead, size_t sizeType,
         return replaced;
     }
 
+    if ( wcscmp ( pSearched, pReplaced ) == 0 )
+    {
+        return replaced;
+    }
+
     //
     while ( sizeType > 0 && *lineRead != L'\0' )
     {
@@ -472,8 +495,11 @@ bool __strrepW (    WCHAR *lineRead, size_t sizeType,
                 wmemcpy_s ( lineRead, sizeType, pReplaced, lenReplaced );
 
                 //
-                lineRead    += lenReplaced;
-                sizeType    -= lenReplaced;
+                if ( ! bGlobal || ( lenReplaced >= lenSearched ) )
+                {
+                    lineRead    += lenReplaced;
+                    sizeType    -= lenReplaced;
+                }
 
                 //
                 //      Say it has been replaced
@@ -524,8 +550,13 @@ bool __strrepA (    char *lineRead, size_t sizeType,
         return replaced;
     }
 
+    if ( strcmp ( pSearched, pReplaced ) == 0 )
+    {
+        return replaced;
+    }
+
     //
-    while ( sizeType > 0 && *lineRead != L'\0' )
+    while ( sizeType > 0 && *lineRead != '\0' )
     {
         int compare = strncmp ( lineRead, pSearched, strlen ( pSearched ) );
         if ( compare == 0 )
@@ -556,8 +587,11 @@ bool __strrepA (    char *lineRead, size_t sizeType,
                 memcpy_s ( lineRead, sizeType, pReplaced, lenReplaced );
 
                 //
-                lineRead    += lenReplaced;
-                sizeType    -= lenReplaced;
+                if ( ! bGlobal || ( lenReplaced >= lenSearched ) )
+                {
+                    lineRead    += lenReplaced;
+                    sizeType    -= lenReplaced;
+                }
 
                 //
                 //      Say it has been replaced
@@ -1034,7 +1068,7 @@ void RemoveCRLFA ( char *pLine )
         {
             if ( pLine [ i ] == '\r' || pLine [ i ] == '\n' )
             {
-                pLine [ i ] = L'\0';
+                pLine [ i ] = '\0';
             }
             else
             {
@@ -1079,17 +1113,17 @@ const char * FindFileTypeA ( const char *line )
 {
     for ( int iX = ( int ) strlen ( line ) - 1; iX >= 0; iX-- )
     {
-        if ( line [ iX ] == L'.' )
+        if ( line [ iX ] == '.' )
         {
             return line + iX;
         }
 
-        if ( line [ iX ] == L':' )
+        if ( line [ iX ] == ':' )
         {
             return ".";
         }
 
-        if ( line [ iX ] == L'\\' )
+        if ( line [ iX ] == '\\' )
         {
             return ".";
         }
@@ -1133,17 +1167,17 @@ const char * GetFileTypeA ( const char *line )
 {
     for ( int iX = ( int ) strlen ( line ) - 1; iX >= 0; iX-- )
     {
-        if ( line [ iX ] == L'.' )
+        if ( line [ iX ] == '.' )
         {
             return line + iX + 1;
         }
 
-        if ( line [ iX ] == L':' )
+        if ( line [ iX ] == ':' )
         {
             return "";
         }
 
-        if ( line [ iX ] == L'\\' )
+        if ( line [ iX ] == '\\' )
         {
             return "";
         }
@@ -1808,7 +1842,7 @@ void RemoveTrailingBytesA ( char *line, char *bytes )
         }
 
         //
-        line [ iX ] = L'\0';
+        line [ iX ] = '\0';
     }
 }
 
@@ -3537,29 +3571,20 @@ SizeInBytes ConvertWCToWC ( WCHAR *wcLine, SizeInChars iWcLine, SizeInChars iWcL
     }
 
     SizeInBytes iMbLine = ( iWcLine + 1 ) * sizeof(WCHAR);
-    char *mbLine = (char* ) malloc ( iMbLine );
-    ZeroMemory ( mbLine, iMbLine );
+    AutoPtrA mbLine ( iMbLine );
 
     BOOL bError1 = FALSE;
-    iMbLine = ConvertWCToMBCS ( wcLine, iWcLineLength, mbLine, iMbLine, CodePageTo, bError1 );
+    iMbLine = ConvertWCToMBCS ( wcLine, iWcLineLength, mbLine.ptr, iMbLine, CodePageTo, bError1 );
     if ( iMbLine <= 0 )
     {
         bErrors = bError1;
-        if ( mbLine != NULL )
-        {
-            free ( mbLine );
-        }
         return 0;
     }
 
     BOOL bError2 = FALSE;
-    iWcLine = ConvertMBCSToWC ( mbLine, iMbLine, wcLine, iWcLine, CodePageFrom, bError2 );
+    iWcLine = ConvertMBCSToWC ( mbLine.ptr, iMbLine, wcLine, iWcLine, CodePageFrom, bError2 );
 
     bErrors = bError1 | bError2;
-    if ( mbLine != NULL )
-    {
-        free ( mbLine );
-    }
     return iWcLine;
 }
 
@@ -3576,29 +3601,20 @@ extern SizeInBytes ConvertMBToMB (  char *mbLine, SizeInBytes iMbLine, SizeInByt
     }
 
     SizeInBytes iWcLine = ( iMbLine + 1 )  * sizeof(WCHAR);
-    WCHAR *wcLine = (WCHAR* ) malloc ( iWcLine );
-    ZeroMemory ( wcLine, iWcLine );
+    AutoPtrW wcLine ( iWcLine / sizeof(WCHAR) );
 
     BOOL bError1 = FALSE;
     BOOL bError2 = FALSE;
-    iWcLine = ConvertMBCSToWC ( mbLine, iMbLineLength, wcLine, iWcLine, CodePageFrom, bError1 );
+    iWcLine = ConvertMBCSToWC ( mbLine, iMbLineLength, wcLine.wptr, iWcLine, CodePageFrom, bError1 );
     if ( iWcLine <= 0 )
     {
         bErrors = bError1;
-        if ( wcLine != NULL )
-        {
-            free ( wcLine );
-        }
         return 0;
     }
 
-    iMbLine = ConvertWCToMBCS ( wcLine, iWcLine, mbLine, iMbLine, CodePageTo, bError2 );
+    iMbLine = ConvertWCToMBCS ( wcLine.wptr, iWcLine, mbLine, iMbLine, CodePageTo, bError2 );
 
     bErrors = bError1 | bError2;
-    if ( wcLine != NULL )
-    {
-        free ( wcLine );
-    }
 
     return iMbLine;
 }
@@ -3634,8 +3650,7 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //
     //  First Convert UTF-16 to ANSI : The String will be an UTF-8 MBCS String
     int iLineOne    = ( int ) ( wcslen ( pSource ) + 1 ) * sizeof(WCHAR) * 2;
-    char *mbsLineOne    = ( char * ) malloc ( iLineOne );
-    memset ( mbsLineOne, 0, iLineOne );
+    AutoPtrA mbsLineOne ( iLineOne );
 
     LPCSTR  pDefaultChar        = "?";
     BOOL    UsedDefaultChar     = FALSE;
@@ -3650,7 +3665,7 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
         dwWCFlag,                               // NULL,    // performance and mapping flags
         pSource,                                // wide-character string
         -1,                                     // number of chars in string
-        mbsLineOne,                             // buffer for new string
+        mbsLineOne.ptr,                         // buffer for new string
         iLineOne,                               // size of buffer
         pDefaultChar,                           // default for unmappable chars
         pUsedDefaultChar                        // set when default char used
@@ -3660,15 +3675,13 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //  Error : Leave Unchanged
     if ( iRes <= 0 || UsedDefaultChar )
     {
-        free ( mbsLineOne );
         return uft8Done;
     }
 
     //
     //  Second Convert
     int iLineTwo        =  iLineOne;
-    WCHAR   *wcsLineTwo = (WCHAR * ) malloc ( iLineTwo );
-    memset ( wcsLineTwo, 0, iLineTwo );
+    AutoPtrW wcsLineTwo ( iLineTwo / sizeof(WCHAR) );
 
     //
     //      Then Convert MBCS UTF-8 to UTF-16 (unicode)
@@ -3676,9 +3689,9 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     iRes = MultiByteToWideChar (
         CodePageFrom,                       //  code page
         dwMBFlag,                           //  MB_ERR_INVALID_CHARS,   // performance and mapping flags
-        mbsLineOne,                         //  wide-character string
+        mbsLineOne.ptr,                     //  wide-character string
         -1,                                 //  number of chars in string
-        wcsLineTwo,                         //  buffer for new string
+        wcsLineTwo.wptr,                    //  buffer for new string
         iLineTwo / sizeof ( WCHAR )         //  size of buffer
     );
 
@@ -3686,8 +3699,6 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //  Error : Leave Unchanged
     if ( iRes <= 0 )
     {
-        free ( wcsLineTwo );
-        free ( mbsLineOne );
         return uft8Done;
     }
 
@@ -3700,8 +3711,7 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //
     //  Convert UTF-16 (unicode) to ANSI
     int iLineThree      = iLineOne;
-    char *mbsLineThree  = ( char * ) malloc ( iLineThree );
-    memset ( mbsLineThree, 0, iLineThree );
+    AutoPtrA mbsLineThree ( iLineThree );
 
     pDefaultChar        = "?";
     UsedDefaultChar     = FALSE;
@@ -3713,9 +3723,9 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     iRes = WideCharToMultiByte(
         CodePageTo,                             //  code page
         dwWCFlag,                               //  NULL,   // performance and mapping flags
-        wcsLineTwo,                             //  wide-character string
+        wcsLineTwo.wptr,                        //  wide-character string
         -1,                                     //  number of chars in string
-        mbsLineThree,                           //  buffer for new string
+        mbsLineThree.ptr,                       //  buffer for new string
         iLineThree,                             //  size of buffer
         pDefaultChar,                           //  default for unmappable chars
         pUsedDefaultChar                        //  set when default char used
@@ -3723,17 +3733,13 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
 
     if ( iRes <= 0 || UsedDefaultChar )
     {
-        free ( mbsLineThree );
-        free ( wcsLineTwo );
-        free ( mbsLineOne );
         return uft8Done;
     }
 
     //
     //  Then Convert ANSI to UTF-16
     int iLineFour           =  iLineOne;
-    WCHAR   *wcsLineFour    = ( WCHAR * ) malloc ( iLineFour );
-    memset ( wcsLineFour, 0, iLineFour );
+    AutoPtrW wcsLineFour ( iLineFour / sizeof(WCHAR) );
 
     //
     //      Convert ANSI to UTF-16
@@ -3741,26 +3747,21 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     iRes = MultiByteToWideChar (
         CodePageTo,                         //  code page
         dwMBFlag,                           //  MB_ERR_INVALID_CHARS,   // performance and mapping flags
-        mbsLineThree,                       //  wide-character string
+        mbsLineThree.ptr,                   //  wide-character string
         -1,                                 //  number of chars in string
-        wcsLineFour,                        //  buffer for new string
+        wcsLineFour.wptr,                   //  buffer for new string
         iLineFour / sizeof ( WCHAR )        //  size of buffer
     );
 
     if ( iRes <= 0 )
     {
-        free ( wcsLineFour );
-        free ( mbsLineThree );
-        free ( wcsLineTwo );
-        free ( mbsLineOne );
         return uft8Done;
     }
 
     //
     //  Finally Convert UTF-16 (ANSI) back to UTF-8
     int iLineFive           = iLineOne;
-    char *mbsLineFive       = ( char * ) malloc ( iLineFive );
-    memset ( mbsLineFive, 0, iLineFive );
+    AutoPtrA mbsLineFive ( iLineFive );
 
     pDefaultChar        = "?";
     UsedDefaultChar     = FALSE;
@@ -3772,9 +3773,9 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     iRes = WideCharToMultiByte(
         CodePageFrom,                           //  code page
         dwWCFlag,                               //  NULL,   // performance and mapping flags
-        wcsLineFour,                            //  wide-character string
+        wcsLineFour.wptr,                       //  wide-character string
         -1,                                     //  number of chars in string
-        mbsLineFive,                            //  buffer for new string
+        mbsLineFive.ptr,                        //  buffer for new string
         iLineFive,                              //  size of buffer
         pDefaultChar,                           //  NULL    // default for unmappable chars
         pUsedDefaultChar                        //  NULL    // set when default char used
@@ -3782,36 +3783,24 @@ bool Try5ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
 
     if ( iRes <= 0 )
     {
-        free ( mbsLineFive );
-        free ( wcsLineFour );
-        free ( mbsLineThree );
-        free ( wcsLineTwo );
-        free ( mbsLineOne );
         return uft8Done;
     }
 
     //
     //  Result Match with original line
-    if ( strcmp ( mbsLineOne, mbsLineFive ) == 0 )
+    if ( strcmp ( mbsLineOne.ptr, mbsLineFive.ptr ) == 0 )
     {
         //  Final Line are Differents
-        if ( wcscmp ( pSource, wcsLineTwo ) != 0 )
+        if ( wcscmp ( pSource, wcsLineTwo.wptr ) != 0 )
         {
             if ( bDisplay )
             {
-                PrintDirectW ( L"Replacing Utf8 Line '%s' By '%s'\n", pSource, wcsLineTwo ) ;
+                PrintDirectW ( L"Replacing Utf8 Line '%s' By '%s'\n", pSource, wcsLineTwo.wptr ) ;
             }
-            wcscpy_s ( pSource, iSizeByte / sizeof ( WCHAR ), wcsLineTwo );
+            wcscpy_s ( pSource, iSizeByte / sizeof ( WCHAR ), wcsLineTwo.wptr );
             uft8Done = true;
         }
     }
-
-    //
-    free ( mbsLineFive );
-    free ( wcsLineFour );
-    free ( mbsLineThree );
-    free ( wcsLineTwo );
-    free ( mbsLineOne );
 
     //
     return uft8Done;
@@ -3849,8 +3838,7 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //
     //  First Convert UTF-16 to ANSI : The String will be an UTF-8 MBCS String
     int iLineOne    = ( int ) ( wcslen ( pSource ) + 1 ) * sizeof(WCHAR) * 2;
-    char *mbsLineOne    = ( char * ) malloc ( iLineOne );
-    memset ( mbsLineOne, 0, iLineOne );
+    AutoPtrA mbsLineOne ( iLineOne );
 
     LPCSTR  pDefaultChar        = "?";
     BOOL    UsedDefaultChar     = FALSE;
@@ -3865,7 +3853,7 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
         dwWCFlag,                               //  NULL,   // performance and mapping flags
         pSource,                                //  wide-character string
         -1,                                     //  number of chars in string
-        mbsLineOne,                             //  buffer for new string
+        mbsLineOne.ptr,                         //  buffer for new string
         iLineOne,                               //  size of buffer
         pDefaultChar,                           //  NULL,   // default for unmappable chars
         pUsedDefaultChar                        //  set when default char used
@@ -3875,15 +3863,13 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //  Error : Leave Unchanged
     if ( iRes <= 0 || UsedDefaultChar )
     {
-        free ( mbsLineOne );
         return uft8Done;
     }
 
     //
     //  Second Convert
     int iLineTwo        =  iLineOne;
-    WCHAR   *wcsLineTwo = (WCHAR * ) malloc ( iLineTwo );
-    memset ( wcsLineTwo, 0, iLineTwo );
+    AutoPtrW wcsLineTwo ( iLineTwo / sizeof(WCHAR) );
 
     //
     //      Then Convert MBCS UTF-8 to UTF-16 (unicode)
@@ -3891,9 +3877,9 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     iRes = MultiByteToWideChar (
         CodePageFrom,                       //  code page
         dwMBFlag,                           //  MB_ERR_INVALID_CHARS,   // performance and mapping flags
-        mbsLineOne,                         //  wide-character string
+        mbsLineOne.ptr,                     //  wide-character string
         -1,                                 //  number of chars in string
-        wcsLineTwo,                         //  buffer for new string
+        wcsLineTwo.wptr,                    //  buffer for new string
         iLineTwo / sizeof ( WCHAR )         //  size of buffer
     );
 
@@ -3901,8 +3887,6 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //  Error : Leave Unchanged
     if ( iRes <= 0 )
     {
-        free ( wcsLineTwo );
-        free ( mbsLineOne );
         return uft8Done;
     }
 
@@ -3915,8 +3899,7 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     //
     //  Convert UTF-16 (unicode) to ANSI
     int iLineThree      = iLineOne;
-    char *mbsLineThree  = ( char * ) malloc ( iLineThree );
-    memset ( mbsLineThree, 0, iLineThree );
+    AutoPtrA mbsLineThree ( iLineThree );
 
     pDefaultChar        = "?";
     UsedDefaultChar     = FALSE;
@@ -3928,9 +3911,9 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     iRes = WideCharToMultiByte(
         CodePageFrom,                           // code page
         dwWCFlag,                               // WC_ERR_INVALID_CHARS,    // performance and mapping flags
-        wcsLineTwo,                             // wide-character string
+        wcsLineTwo.wptr,                        // wide-character string
         -1,                                     // number of chars in string
-        mbsLineThree,                           // buffer for new string
+        mbsLineThree.ptr,                       // buffer for new string
         iLineThree,                             // size of buffer
         pDefaultChar,                           // NULL,    // default for unmappable chars
         pUsedDefaultChar                        // NULL     // set when default char used
@@ -3938,17 +3921,13 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
 
     if ( iRes <= 0 || UsedDefaultChar )
     {
-        free ( mbsLineThree );
-        free ( wcsLineTwo );
-        free ( mbsLineOne );
         return uft8Done;
     }
 
     //
     //  Then Convert ANSI to UTF-16
     int iLineFour           =  iLineOne;
-    WCHAR   *wcsLineFour    = ( WCHAR * ) malloc ( iLineFour );
-    memset ( wcsLineFour, 0, iLineFour );
+    AutoPtrW wcsLineFour ( iLineFour / sizeof(WCHAR) );
 
     //
     //      Convert ANSI to UTF-16
@@ -3956,42 +3935,32 @@ bool Try4ConvertUtf8ToAnsiW ( WCHAR *pSource, int iSizeByte, bool bDisplay )
     iRes = MultiByteToWideChar (
         CodePageTo,                         //  code page
         dwMBFlag,                           //  MB_ERR_INVALID_CHARS,   // performance and mapping flags
-        mbsLineThree,                       //  wide-character string
+        mbsLineThree.ptr,                   //  wide-character string
         -1,                                 //  number of chars in string
-        wcsLineFour,                        //  buffer for new string
+        wcsLineFour.wptr,                   //  buffer for new string
         iLineFour / sizeof ( WCHAR )        //  size of buffer
     );
 
     if ( iRes <= 0 )
     {
-        free ( wcsLineFour );
-        free ( mbsLineThree );
-        free ( wcsLineTwo );
-        free ( mbsLineOne );
         return uft8Done;
     }
 
     //
     //  Result Match with original line
-    if ( wcscmp ( pSource, wcsLineFour ) == 0 )
+    if ( wcscmp ( pSource, wcsLineFour.wptr ) == 0 )
     {
         //  Final Line are Differents
-        if ( wcscmp ( pSource, wcsLineTwo ) != 0 )
+        if ( wcscmp ( pSource, wcsLineTwo.wptr ) != 0 )
         {
             if ( bDisplay )
             {
-                PrintDirectW ( L"Replacing Utf8 Line '%s' By '%s'\n", pSource, wcsLineTwo ) ;
+                PrintDirectW ( L"Replacing Utf8 Line '%s' By '%s'\n", pSource, wcsLineTwo.wptr ) ;
             }
-            wcscpy_s ( pSource, iSizeByte / sizeof ( WCHAR ), wcsLineTwo );
+            wcscpy_s ( pSource, iSizeByte / sizeof ( WCHAR ), wcsLineTwo.wptr );
             uft8Done = true;
         }
     }
-
-    //
-    free ( wcsLineFour );
-    free ( mbsLineThree );
-    free ( wcsLineTwo );
-    free ( mbsLineOne );
 
     //
     return uft8Done;
@@ -5292,6 +5261,10 @@ void PrintRealVersionW (int iWidth)
                 memcpy ( ModuleText, pBufferInfo, iBufferLen * sizeof(WCHAR) );
                 PrintDirectW ( L"%*s : %s\n", iWidth, L"Description", ModuleText );
             }
+
+            ZeroMemory ( ModuleText, sizeof(ModuleText) );
+            swprintf_s ( ModuleText, _wsizeof(ModuleText), L"%s (%d)", VS_VERSION_W, _MSC_FULL_VER );
+            PrintDirectW ( L"%*s : %s\n", iWidth, L"Compiler", ModuleText );
         }
 
         if ( pData != NULL )
@@ -5377,7 +5350,7 @@ void PrintRealVersionA (int iWidth)
                 PrintDirectA ( "%*s : %s\n", iWidth, "Web Site", ModuleText );
             }
 
-            sprintf_s ( ModuleKey, _wsizeof ( ModuleKey ), "\\StringFileInfo\\%08x\\Comments", dwKey );
+            sprintf_s ( ModuleKey, sizeof ( ModuleKey ), "\\StringFileInfo\\%08x\\Comments", dwKey );
             bResult = VerQueryValueA ( pData, ModuleKey, &pBufferInfo, &iBufferLen );
             if ( bResult )
             {
@@ -5394,6 +5367,10 @@ void PrintRealVersionA (int iWidth)
                 memcpy ( ModuleText, pBufferInfo, iBufferLen * sizeof(char) );
                 PrintDirectA ( "%*s : %s\n", iWidth, "Description", ModuleText );
             }
+
+            ZeroMemory ( ModuleText, sizeof(ModuleText) );
+            sprintf_s ( ModuleText, sizeof(ModuleText), "%s (%d)", VS_VERSION_A, _MSC_FULL_VER );
+            PrintDirectA ( "%*s : %s\n", iWidth, "Compiler", ModuleText );
         }
 
         if ( pData != NULL )

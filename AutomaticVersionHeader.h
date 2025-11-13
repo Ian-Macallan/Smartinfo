@@ -5,7 +5,7 @@
 //
 //	(c) 2003 - 2025 Macallan - mailto:ian.macallan@gmail.com
 //
-//	Generated : 24/05/2025 16:24:25
+//	Generated : 13/11/2025 10:05:38
 //
 //===========================================================================================
 //
@@ -57,22 +57,22 @@
 #endif
 
 #ifdef UNICODE
-#define PROGRAM_DATE    L"Sat May 24 16:24"
-#define PROGRAM_DATE_F  L"Sat May 24 16:24 2025"
+#define PROGRAM_DATE    L"Thu Nov 13 10:05"
+#define PROGRAM_DATE_F  L"Thu Nov 13 10:05 2025"
 #define PROGRAM_YEAR    L"2025"
-#define PROGRAM_TIME    L"2025/05/24 16:24:25"
+#define PROGRAM_TIME    L"2025/11/13 10:05:38"
 #else
-#define PROGRAM_DATE    "Sat May 24 16:24"
-#define PROGRAM_DATE_F  "Sat May 24 16:24 2025"
+#define PROGRAM_DATE    "Thu Nov 13 10:05"
+#define PROGRAM_DATE_F  "Thu Nov 13 10:05 2025"
 #define PROGRAM_YEAR    "2025"
-#define PROGRAM_TIME    "2025/05/24 16:24:25"
+#define PROGRAM_TIME    "2025/11/13 10:05:38"
 #endif
 
 #ifdef UNICODE
-#define PROGRAM_VERSION L"1.0.05.002"
-#define PROGRAM_INSTALL L"1.0.05002"
-#define PROGRAM_VER_NUM 10005002
-#define PROGRAM_BUILD   L"74"
+#define PROGRAM_VERSION L"1.0.05.003"
+#define PROGRAM_INSTALL L"1.0.05003"
+#define PROGRAM_VER_NUM 10005003
+#define PROGRAM_BUILD   L"75"
 #define PROGRAM_TITLE   L"Smart Info"
 #ifdef _WIN64
 #define PROGRAM_TITLE_P L"Smart Info (x64 Unicode)"
@@ -80,10 +80,10 @@
 #define PROGRAM_TITLE_P L"Smart Info (x86 Unicode)"
 #endif
 #else
-#define PROGRAM_VERSION "1.0.05.002"
-#define PROGRAM_INSTALL "1.0.05002"
-#define PROGRAM_VER_NUM 10005002
-#define PROGRAM_BUILD   "74"
+#define PROGRAM_VERSION "1.0.05.003"
+#define PROGRAM_INSTALL "1.0.05003"
+#define PROGRAM_VER_NUM 10005003
+#define PROGRAM_BUILD   "75"
 #define PROGRAM_TITLE   "Smart Info"
 #ifdef _WIN64
 #define PROGRAM_TITLE_P "Smart Info (x64 MBCS)"

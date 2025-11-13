@@ -3411,7 +3411,8 @@ DWORD SetWCFlag ( INT codePage, const char *DefaultChar, LPCSTR &pDefaultChar, B
         dwFlag  = WC_ERR_INVALID_CHARS;
     }
     
-    return dwFlag;  
+    //   | WC_COMPOSITECHECK | WC_DISCARDNS
+    return dwFlag | WC_NO_BEST_FIT_CHARS;
 }
 
 //
@@ -3446,7 +3447,8 @@ DWORD SetMBFlag ( INT codePage )
         dwFlag  = NULL;
     }
 
-    return dwFlag;
+    //   | MB_PRECOMPOSED
+    return dwFlag; // | MB_PRECOMPOSED;
 }
 
 //
@@ -5380,3 +5382,203 @@ void PrintRealVersionA (int iWidth)
 
     }
 }
+
+//
+//====================================================================================
+//
+//  Composite chars
+//  xx  CC  80      grave
+//  xx  CC  81      aigu
+//  xx  CC  82      circonflex
+//  xx  CC  83      tilde
+//  xx  CC  88      trema
+//  xx  CC  A7      cedille
+//====================================================================================
+typedef struct CompositeCharsStructW
+{
+    WCHAR           searched;       //  eg a
+    WCHAR           replacingBase;  //  eg à
+} COMPOSITECHARSW;
+
+static COMPOSITECHARSW CompositeCharsW [ ] =
+{
+    {   L'a',   L'à'  },
+    {   L'e',   L'è'  },
+    {   L'i',   L'ì'  },
+    {   L'o',   L'ò'  },
+    {   L'u',   L'ù'  },
+    {   L'A',   L'À'  },
+    {   L'E',   L'È'  },
+    {   L'I',   L'Ì'  },
+    {   L'O',   L'Ò'  },
+    {   L'U',   L'Ù'  },
+};
+
+static COMPOSITECHARSW CompositeCedillaCharsW [ ] =
+{
+    {   L'c',   L'ç'  },
+    {   L'C',   L'Ç'  },
+};
+
+typedef struct CompositeCodesStructW
+{
+    WCHAR           marker;     
+    unsigned char   original;   //  0x80, 0x81, 0x82, 0x83, 0x86
+    int             offset;     //  0 1 2 3 4
+} COMPOSITECODESW;
+
+//  Just After reading
+//  For values as 0x80 0x81 0x82 0x83 0x84 
+static COMPOSITECODESW CompositeCodesW [ ] =
+{
+    {   0x20ac, 0x80, 0 },
+    {   0x0081, 0x81, 1 },
+    {   0x201a, 0x82, 2 },
+    {   0x201e, 0x83, 3 },
+    {   0x0192, 0x84, 4 },
+};
+
+//  For values as 0xA7
+static COMPOSITECODESW CompositeCedillaCodesW [ ] =
+{
+    {   0x00A7, 0xA7, 0 },
+};
+
+//
+//====================================================================================
+//
+//====================================================================================
+SizeInChars ReplaceCompositeW ( WCHAR *wcLine, SizeInChars iWcLine )
+{
+    WCHAR   searched [ 4 ];
+    WCHAR   replaced [ 2 ];
+
+    //
+    searched [ 1 ] = 0xcc;
+    searched [ 3 ] = 0x00;
+
+    replaced [ 1 ] = 0x00;
+
+    //
+    for ( int i = 0; i < sizeof(CompositeCharsW) / sizeof(COMPOSITECHARSW); i++)
+    {
+        searched [ 0 ] = CompositeCharsW [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeCodesW) / sizeof(COMPOSITECODESW); j++ )
+        {
+            searched [ 2 ] = CompositeCodesW [ j ].marker;
+            replaced [ 0 ] = CompositeCharsW [ i ].replacingBase + CompositeCodesW [ j ].offset;
+            __strrepW ( wcLine, iWcLine, searched, replaced, true );
+        }
+    }
+
+    //
+    for ( int i = 0; i < sizeof(CompositeCedillaCharsW) / sizeof(COMPOSITECHARSW); i++)
+    {
+        searched [ 0 ] = CompositeCedillaCharsW [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeCedillaCodesW) / sizeof(COMPOSITECODESW); j++ )
+        {
+            searched [ 2 ] = CompositeCedillaCodesW [ j ].marker;
+            replaced [ 0 ] = CompositeCedillaCharsW [ i ].replacingBase + CompositeCedillaCodesW [ j ].offset;
+            __strrepW ( wcLine, iWcLine, searched, replaced, true );
+        }
+    }
+
+    //
+    return (SizeInChars) wcslen ( wcLine );
+}
+
+//
+//====================================================================================
+//
+//====================================================================================
+
+typedef struct CompositeCharsStructA
+{
+    unsigned char   searched;       //  eg a
+    unsigned char   replacingBase;  //  eg à
+} COMPOSITECHARSA;
+
+static COMPOSITECHARSA CompositeCharsA [ ] =
+{
+    {   'a',   'à'  },
+    {   'e',   'è'  },
+    {   'i',   'ì'  },
+    {   'o',   'ò'  },
+    {   'u',   'ù'  },
+    {   'A',   'À'  },
+    {   'E',   'È'  },
+    {   'I',   'Ì'  },
+    {   'O',   'Ò'  },
+    {   'U',   'Ù'  },
+};
+
+static COMPOSITECHARSA CompositeCedillaCharsA [ ] =
+{
+    {   'c',   'ç'  },
+    {   'C',   'Ç'  },
+};
+
+typedef struct CompositeCodesStructA
+{
+    unsigned char   marker; //  0x80, 0x81, 0x82, 0x83, 0x86
+    int             offset; //  0 1 2 3 4
+} COMPOSITECODESA;
+
+static COMPOSITECODESA CompositeCodesA [ ] =
+{
+    {   0x80, 0 },
+    {   0x81, 1 },
+    {   0x82, 2 },
+    {   0x83, 3 },
+    {   0x84, 4 },
+};
+
+static COMPOSITECODESA CompositeCedillaCodesA [ ] =
+{
+    {   0xA7, 0 },
+};
+
+
+//
+//====================================================================================
+//
+//====================================================================================
+SizeInBytes ReplaceCompositeA ( char *mbLine, SizeInBytes iMbLine )
+{
+    unsigned char   searched [ 4 ];
+    unsigned char   replaced [ 2 ];
+
+    //
+    searched [ 1 ] = 0xcc;
+    searched [ 3 ] = 0x00;
+
+    replaced [ 1 ] = 0x00;
+
+    //
+    for ( int i = 0; i < sizeof(CompositeCharsA) / sizeof(COMPOSITECHARSA); i++)
+    {
+        searched [ 0 ] = CompositeCharsA [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeCodesA) / sizeof(COMPOSITECODESA); j++ )
+        {
+            searched [ 2 ] = CompositeCodesA [ j ].marker;
+            replaced [ 0 ] = CompositeCharsA [ i ].replacingBase + CompositeCodesA [ j ].offset;
+            __strrepA ( mbLine, iMbLine, (const char *) searched, (const char *) replaced, true );
+        }
+    }
+
+    //
+    for ( int i = 0; i < sizeof(CompositeCedillaCharsA) / sizeof(COMPOSITECHARSA); i++)
+    {
+        searched [ 0 ] = CompositeCedillaCharsA [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeCedillaCodesA) / sizeof(COMPOSITECODESA); j++ )
+        {
+            searched [ 2 ] = CompositeCedillaCodesA [ j ].marker;
+            replaced [ 0 ] = CompositeCedillaCharsA [ i ].replacingBase + CompositeCedillaCodesA [ j ].offset;
+            __strrepA ( mbLine, iMbLine, (const char *) searched, (const char *) replaced, true );
+        }
+    }
+
+    //
+    return (SizeInBytes) strlen ( mbLine );
+}
+

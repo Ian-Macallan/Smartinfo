@@ -874,6 +874,10 @@ extern void PrintRealVersionA ( int iWidth = 16 );
 //  Print Real Version
 extern void PrintRealVersionW ( int iWidth = 16 );
 
+//  Composite Chars
+extern SizeInBytes ReplaceCompositeA ( char *mbLine, SizeInBytes iMbLine );
+
+extern SizeInChars ReplaceCompositeW ( WCHAR *wcLine, SizeInChars iWcLine );
 //
 //====================================================================================
 //  Macro

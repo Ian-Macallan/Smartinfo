@@ -1869,7 +1869,7 @@ void CapitalizeStringW ( WCHAR *line, size_t iSize )
         //
         //      If it is a character
         //      next byte will be lower
-        if ( ( octet >= L'A' && octet >= L'Z' ) || ( octet >= L'a' && octet >= L'z' ) || octet == L'\'' )
+        if ( ( octet >= L'A' && octet <= L'Z' ) || ( octet >= L'a' && octet <= L'z' ) || octet == L'\'' )
         {
             toUpper = false;
         }
@@ -1915,7 +1915,7 @@ void CapitalizeStringA ( char *line, size_t iSize )
         //
         //      If it is a character
         //      next byte will be lower
-        if ( ( octet >= 'A' && octet >= 'Z' ) || ( octet >= 'a' && octet >= 'z' ) || octet == '\'' )
+        if ( ( octet >= 'A' && octet <= 'Z' ) || ( octet >= 'a' && octet <= 'z' ) || octet == '\'' )
         {
             toUpper = false;
         }
@@ -5396,8 +5396,8 @@ void PrintRealVersionA (int iWidth)
 //====================================================================================
 typedef struct CompositeCharsStructW
 {
-    WCHAR           searched;       //  eg a
-    WCHAR           replacingBase;  //  eg à
+    WCHAR           searched;       //  eg a e i o u y
+    WCHAR           replacingBase;  //  eg à è ì
 } COMPOSITECHARSW;
 
 static COMPOSITECHARSW CompositeCharsW [ ] =
@@ -5436,6 +5436,15 @@ static COMPOSITECODESW CompositeCodesW [ ] =
     {   0x201a, 0x82, 2 },
     {   0x201e, 0x83, 3 },
     {   0x0192, 0x84, 4 },
+};
+
+static COMPOSITECODESW CompositeDirectsW [ ] =
+{
+    {   0x0300, 0x80, 0 },  //  è
+    {   0x0301, 0x81, 1 },  //  é
+    {   0x0302, 0x82, 2 },  //  ê
+    {   0x0303, 0x83, 3 },  //  ã
+    {   0x0308, 0x84, 4 },  //  ë
 };
 
 //  For values as 0xA7
@@ -5484,7 +5493,21 @@ SizeInChars ReplaceCompositeW ( WCHAR *wcLine, SizeInChars iWcLine )
     }
 
     //
+    for ( int i = 0; i < sizeof(CompositeCharsW) / sizeof(COMPOSITECHARSW); i++)
+    {
+        searched [ 0 ] = CompositeCharsW [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeDirectsW) / sizeof(COMPOSITECODESW); j++ )
+        {
+            searched [ 1 ] = CompositeDirectsW [ j ].marker;
+            searched [ 2 ] = 0x0000;
+            replaced [ 0 ] = CompositeCharsW [ i ].replacingBase + CompositeDirectsW [ j ].offset;
+            __strrepW ( wcLine, iWcLine, searched, replaced, true );
+        }
+    }
+
+    //
     return (SizeInChars) wcslen ( wcLine );
+
 }
 
 //

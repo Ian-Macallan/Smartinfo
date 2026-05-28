@@ -3563,6 +3563,7 @@ SizeInBytes ConvertMBCSToWC (   const char *mbLineZero, SizeInBytes iMbLineZero,
 //====================================================================================
 //  Generally CodePageTo is CP_ACP and CodePageFrom is other 1047...
 //  To Show EBCDIC
+//  To convert displayed UTF8 to Unicode : CodePageTo : CP_OEMCP - CodePageFrom : CP_UTF8
 //====================================================================================
 SizeInBytes ConvertWCToWC ( WCHAR *wcLine, SizeInChars iWcLine, SizeInChars iWcLineLength,
                             INT CodePageTo, INT CodePageFrom, BOOL &bErrors )
@@ -5398,32 +5399,47 @@ typedef struct CompositeCharsStructW
 {
     WCHAR           searched;       //  eg a e i o u y
     WCHAR           replacingBase;  //  eg à è ì
+    //  Offset between the char (ex ì) and the real char (ex ï)
+    int             otherOffset;    //  0 1 2 3 4
 } COMPOSITECHARSW;
 
+//
+//  Grave   Aigu    Circo   Tilde   Trema   Rond
+//  0       1       2       3       4       5
+//  À       Á       Â       Ã       Ä       Å
+//  O idem A
+//
+//  Grave   Aigu    Circo   Trema
+//  0       1       2       3
+//  È       É       Ê       Ë
+//  I idem E
+//  U idem E
 static COMPOSITECHARSW CompositeCharsW [ ] =
 {
-    {   L'a',   L'à'  },
-    {   L'e',   L'è'  },
-    {   L'i',   L'ì'  },
-    {   L'o',   L'ò'  },
-    {   L'u',   L'ù'  },
-    {   L'A',   L'À'  },
-    {   L'E',   L'È'  },
-    {   L'I',   L'Ì'  },
-    {   L'O',   L'Ò'  },
-    {   L'U',   L'Ù'  },
+    {   L'a',   L'à',   0   },
+    {   L'e',   L'è',   0   },
+    {   L'i',   L'ì',   0   },
+    {   L'o',   L'ò',   0   },
+    {   L'u',   L'ù',   0   },
+    {   L'A',   L'À',   0   },
+    {   L'E',   L'È',   0   },
+    {   L'I',   L'Ì',   0   },
+    {   L'O',   L'Ò',   0   },
+    {   L'U',   L'Ù',   0   },
 };
 
-static COMPOSITECHARSW CompositeCedillaCharsW [ ] =
+static COMPOSITECHARSW CompositeOtherCharsW [ ] =
 {
-    {   L'c',   L'ç'  },
-    {   L'C',   L'Ç'  },
+    {   L'c',   L'ç',   0   },
+    {   L'n',   L'ñ',   0   },
+    {   L'C',   L'Ç',   0   },
+    {   L'N',   L'Ñ',   0   },
 };
 
 typedef struct CompositeCodesStructW
 {
-    WCHAR           marker;     
-    unsigned char   original;   //  0x80, 0x81, 0x82, 0x83, 0x86
+    WCHAR           marker;
+    //  Offset between the char (ex ì) and the real char (ex ï)
     int             offset;     //  0 1 2 3 4
 } COMPOSITECODESW;
 
@@ -5431,28 +5447,39 @@ typedef struct CompositeCodesStructW
 //  For values as 0x80 0x81 0x82 0x83 0x84 
 static COMPOSITECODESW CompositeCodesW [ ] =
 {
-    {   0x20ac, 0x80, 0 },
-    {   0x0081, 0x81, 1 },
-    {   0x201a, 0x82, 2 },
-    {   0x201e, 0x83, 3 },
-    {   0x0192, 0x84, 4 },
-};
-
-static COMPOSITECODESW CompositeDirectsW [ ] =
-{
-    {   0x0300, 0x80, 0 },  //  è
-    {   0x0301, 0x81, 1 },  //  é
-    {   0x0302, 0x82, 2 },  //  ê
-    {   0x0303, 0x83, 3 },  //  ã
-    {   0x0308, 0x84, 4 },  //  ë
+    {   0x20ac, 0 },  //  à     Grave
+    {   0x0081, 1 },  //  é     Aigu
+    {   0x201a, 2 },  //  ê     Circonflex
+    {   0x201e, 3 },  //  ë     Trema
+    {   0x0088, 3 },  //  ü     Trema
+    {   0x02c6, 3 },  //  ü     Trema
+    {   0x0192, 4 },  //  
 };
 
 //  For values as 0xA7
-static COMPOSITECODESW CompositeCedillaCodesW [ ] =
+static COMPOSITECODESW CompositeOtherCodesW [ ] =
 {
-    {   0x00A7, 0xA7, 0 },
+    {   0x00A7, 0 },  // ç      Cedilla
+    {   0x0303, 0 },  // ñ      Tilde
 };
 
+//  Special when ANSI
+static COMPOSITECODESW CompositeDirectsW [ ] =
+{
+    {   0x0300, 0 },  //  è     Grave
+    {   0x0301, 1 },  //  é     Aigu
+    {   0x0302, 2 },  //  ê     Circonflex
+    {   0x0303, 3 },  //  ã     Tilde
+    {   0x0308, 3 },  //  ë ï   Trema
+};
+
+//  Special when ANSI
+//  For values as 0xA7
+static COMPOSITECODESW CompositeOtherDirectW [ ] =
+{
+    {   0x0327, 0 },  // ç      Cedilla
+    {   0x0303, 0 },  // ñ      Tilde
+};
 //
 //====================================================================================
 //
@@ -5468,9 +5495,10 @@ SizeInChars ReplaceCompositeW ( WCHAR *wcLine, SizeInChars iWcLine )
 
     replaced [ 1 ] = 0x00;
 
-    //
+    //  a e i o u A E I O U
     for ( int i = 0; i < sizeof(CompositeCharsW) / sizeof(COMPOSITECHARSW); i++)
     {
+        //  First searched is the letter
         searched [ 0 ] = CompositeCharsW [ i ].searched;
         for ( int j = 0; j < sizeof(CompositeCodesW) / sizeof(COMPOSITECODESW); j++ )
         {
@@ -5481,26 +5509,52 @@ SizeInChars ReplaceCompositeW ( WCHAR *wcLine, SizeInChars iWcLine )
     }
 
     //
-    for ( int i = 0; i < sizeof(CompositeCedillaCharsW) / sizeof(COMPOSITECHARSW); i++)
+    searched [ 1 ] = 0xcc;
+    searched [ 3 ] = 0x00;
+
+    replaced [ 1 ] = 0x00;
+
+    //  c n C N
+    for ( int i = 0; i < sizeof(CompositeOtherCharsW) / sizeof(COMPOSITECHARSW); i++)
     {
-        searched [ 0 ] = CompositeCedillaCharsW [ i ].searched;
-        for ( int j = 0; j < sizeof(CompositeCedillaCodesW) / sizeof(COMPOSITECODESW); j++ )
+        //  First searched is the letter
+        searched [ 0 ] = CompositeOtherCharsW [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeOtherCodesW) / sizeof(COMPOSITECODESW); j++ )
         {
-            searched [ 2 ] = CompositeCedillaCodesW [ j ].marker;
-            replaced [ 0 ] = CompositeCedillaCharsW [ i ].replacingBase + CompositeCedillaCodesW [ j ].offset;
+            searched [ 2 ] = CompositeOtherCodesW [ j ].marker;
+            replaced [ 0 ] = CompositeOtherCharsW [ i ].replacingBase + CompositeOtherCodesW [ j ].offset;
             __strrepW ( wcLine, iWcLine, searched, replaced, true );
         }
     }
 
     //
+    //  When ANSI is used
+    //  a e i o u A E I O U
     for ( int i = 0; i < sizeof(CompositeCharsW) / sizeof(COMPOSITECHARSW); i++)
     {
+        //  First searched is the letter
         searched [ 0 ] = CompositeCharsW [ i ].searched;
         for ( int j = 0; j < sizeof(CompositeDirectsW) / sizeof(COMPOSITECODESW); j++ )
         {
             searched [ 1 ] = CompositeDirectsW [ j ].marker;
             searched [ 2 ] = 0x0000;
             replaced [ 0 ] = CompositeCharsW [ i ].replacingBase + CompositeDirectsW [ j ].offset;
+            __strrepW ( wcLine, iWcLine, searched, replaced, true );
+        }
+    }
+
+    //
+    //  When ANSI is used
+    //  c n C N
+    for ( int i = 0; i < sizeof(CompositeOtherCharsW) / sizeof(COMPOSITECHARSW); i++)
+    {
+        //  First searched is the letter
+        searched [ 0 ] = CompositeOtherCharsW [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeOtherDirectW) / sizeof(COMPOSITECODESW); j++ )
+        {
+            searched [ 1 ] = CompositeOtherDirectW [ j ].marker;
+            searched [ 2 ] = 0x0000;
+            replaced [ 0 ] = CompositeOtherCharsW [ i ].replacingBase + CompositeOtherDirectW [ j ].offset;
             __strrepW ( wcLine, iWcLine, searched, replaced, true );
         }
     }
@@ -5519,31 +5573,47 @@ typedef struct CompositeCharsStructA
 {
     unsigned char   searched;       //  eg a
     unsigned char   replacingBase;  //  eg à
+    //  Offset between the char (ex ì) and the real char (ex ï)
+    int             otherOffset;    //  0 1 2 3 4
 } COMPOSITECHARSA;
 
+//
+//  Grave   Aigu    Circo   Tilde   Trema   Rond
+//  0       1       2       3       4       5
+//  À       Á       Â       Ã       Ä       Å
+//  O idem A
+//
+//  Grave   Aigu    Circo   Trema
+//  0       1       2       3
+//  È       É       Ê       Ë
+//  I idem E
+//  U idem E
 static COMPOSITECHARSA CompositeCharsA [ ] =
 {
-    {   'a',   'à'  },
-    {   'e',   'è'  },
-    {   'i',   'ì'  },
-    {   'o',   'ò'  },
-    {   'u',   'ù'  },
-    {   'A',   'À'  },
-    {   'E',   'È'  },
-    {   'I',   'Ì'  },
-    {   'O',   'Ò'  },
-    {   'U',   'Ù'  },
+    {   'a',   'à',   0 },
+    {   'e',   'è',   0 },
+    {   'i',   'ì',   0 },
+    {   'o',   'ò',   0 },
+    {   'u',   'ù',   0 },
+    {   'A',   'À',   0 },
+    {   'E',   'È',   0 },
+    {   'I',   'Ì',   0 },
+    {   'O',   'Ò',   0 },
+    {   'U',   'Ù',   0 },
 };
 
-static COMPOSITECHARSA CompositeCedillaCharsA [ ] =
+static COMPOSITECHARSA CompositeOtherCharsA [ ] =
 {
-    {   'c',   'ç'  },
-    {   'C',   'Ç'  },
+    {   'c',   'ç',   0 },
+    {   'n',   'ñ',   0 },
+    {   'C',   'Ç',   0 },
+    {   'N',   'Ñ',   0 },
 };
 
 typedef struct CompositeCodesStructA
 {
     unsigned char   marker; //  0x80, 0x81, 0x82, 0x83, 0x86
+    //  Offset between the char (ex ì) and the real char (ex ï)
     int             offset; //  0 1 2 3 4
 } COMPOSITECODESA;
 
@@ -5553,12 +5623,13 @@ static COMPOSITECODESA CompositeCodesA [ ] =
     {   0x81, 1 },
     {   0x82, 2 },
     {   0x83, 3 },
-    {   0x84, 4 },
+    {   0x84, 3 },
 };
 
-static COMPOSITECODESA CompositeCedillaCodesA [ ] =
+static COMPOSITECODESA CompositeOtherCodesA [ ] =
 {
-    {   0xA7, 0 },
+    {   0xA7, 0 },  // ç
+    {   0x83, 0 },  // ñ
 };
 
 
@@ -5577,7 +5648,7 @@ SizeInBytes ReplaceCompositeA ( char *mbLine, SizeInBytes iMbLine )
 
     replaced [ 1 ] = 0x00;
 
-    //
+    //  a e i o u A E I O U
     for ( int i = 0; i < sizeof(CompositeCharsA) / sizeof(COMPOSITECHARSA); i++)
     {
         searched [ 0 ] = CompositeCharsA [ i ].searched;
@@ -5590,13 +5661,19 @@ SizeInBytes ReplaceCompositeA ( char *mbLine, SizeInBytes iMbLine )
     }
 
     //
-    for ( int i = 0; i < sizeof(CompositeCedillaCharsA) / sizeof(COMPOSITECHARSA); i++)
+    searched [ 1 ] = 0xcc;
+    searched [ 3 ] = 0x00;
+
+    replaced [ 1 ] = 0x00;
+
+    //  c n C N
+    for ( int i = 0; i < sizeof(CompositeOtherCharsA) / sizeof(COMPOSITECHARSA); i++)
     {
-        searched [ 0 ] = CompositeCedillaCharsA [ i ].searched;
-        for ( int j = 0; j < sizeof(CompositeCedillaCodesA) / sizeof(COMPOSITECODESA); j++ )
+        searched [ 0 ] = CompositeOtherCharsA [ i ].searched;
+        for ( int j = 0; j < sizeof(CompositeOtherCodesA) / sizeof(COMPOSITECODESA); j++ )
         {
-            searched [ 2 ] = CompositeCedillaCodesA [ j ].marker;
-            replaced [ 0 ] = CompositeCedillaCharsA [ i ].replacingBase + CompositeCedillaCodesA [ j ].offset;
+            searched [ 2 ] = CompositeOtherCodesA [ j ].marker;
+            replaced [ 0 ] = CompositeOtherCharsA [ i ].replacingBase + CompositeOtherCodesA [ j ].offset;
             __strrepA ( mbLine, iMbLine, (const char *) searched, (const char *) replaced, true );
         }
     }

@@ -246,7 +246,7 @@ bool __strrepiW (   WCHAR *lineRead, size_t sizeType,
         return replaced;
     }
 
-    if ( _wcsicmp ( pSearched, pReplaced ) == 0 )
+    if ( wcscmp ( pSearched, pReplaced ) == 0 )
     {
         return replaced;
     }

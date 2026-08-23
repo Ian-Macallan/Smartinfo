@@ -1,4 +1,4 @@
-1.0.5.5
+1.0.5.6
 SmartInfo
-SmartInfo (x86) : Thu May 28 13:14 1.0.5.5
-SmartInfo (x64) : Thu May 28 13:14 1.0.5.5
+SmartInfo (x86) : Sun Aug 23 12:48 1.0.5.6
+SmartInfo (x64) : Sun Aug 23 12:48 1.0.5.6
